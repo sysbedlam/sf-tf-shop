@@ -1,0 +1,140 @@
+version: "3.8"
+
+services:
+  front-end:
+    image: weaveworksdemos/front-end:0.3.12
+    hostname: front-end
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: any
+
+  edge-router:
+    image: weaveworksdemos/edge-router:0.1.1
+    hostname: edge-router
+    ports:
+      - "80:80"
+      - "8080:8080"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  catalogue:
+    image: weaveworksdemos/catalogue:0.3.5
+    hostname: catalogue
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  catalogue-db:
+    image: weaveworksdemos/catalogue-db:0.3.0
+    hostname: catalogue-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_DATABASE=socksdb
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  carts:
+    image: weaveworksdemos/carts:0.4.8
+    hostname: carts
+    environment:
+      - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  carts-db:
+    image: mongo:3.4
+    hostname: carts-db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  orders:
+    image: weaveworksdemos/orders:0.4.7
+    hostname: orders
+    environment:
+      - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  orders-db:
+    image: mongo:3.4
+    hostname: orders-db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  shipping:
+    image: weaveworksdemos/shipping:0.4.8
+    hostname: shipping
+    environment:
+      - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  queue-master:
+    image: weaveworksdemos/queue-master:0.3.1
+    hostname: queue-master
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  rabbitmq:
+    image: rabbitmq:3.6.8
+    hostname: rabbitmq
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  payment:
+    image: weaveworksdemos/payment:0.4.3
+    hostname: payment
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  user:
+    image: weaveworksdemos/user:0.4.4
+    hostname: user
+    environment:
+      - MONGO_HOST=user-db:27017
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  user-db:
+    image: weaveworksdemos/user-db:0.4.0
+    hostname: user-db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  user-sim:
+    image: weaveworksdemos/load-test:0.1.1
+    hostname: user-simulator
+    command: "-d 60 -r 200 -c 2 -h edge-router"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
